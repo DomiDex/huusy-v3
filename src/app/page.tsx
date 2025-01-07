@@ -1,101 +1,145 @@
-import Image from "next/image";
+import { Suspense } from 'react';
+import Link from 'next/link';
+import { getProperties, getPropertyTypes } from '@/services/properties';
+import PropertyCardVertical from '@/components/properties/cards/PropertyCardVertical';
+import TestimonialCard from '@/components/properties/cards/testimonial/TestimonialCard';
+import MainCallToAction from '@/components/cta/MainCallToAction';
+import BenefitSection from '@/components/home/BenefitSection';
+import { ClientHeroSection } from '@/components/home/ClientHeroSection';
+import PropertyTypeGrid from '@/components/properties/PropertyTypeGrid';
 
-export default function Home() {
+// Loading skeletons
+function PropertyLoadingSkeleton() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+      {[...Array(8)].map((_, i) => (
+        <div
+          key={i}
+          className='animate-pulse bg-primary-100 rounded-lg h-[300px]'
         />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      ))}
     </div>
+  );
+}
+
+function PropertyTypeLoadingSkeleton() {
+  return (
+    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+      {[...Array(6)].map((_, i) => (
+        <div
+          key={i}
+          className='animate-pulse bg-primary-100 rounded-lg h-[200px]'
+        />
+      ))}
+    </div>
+  );
+}
+
+const TESTIMONIALS = [
+  {
+    testimonial:
+      'Finding a new apartment in the city felt impossible until I found Huusy. Their website was so easy to use! The filters helped me narrow down exactly what I was looking for, and I loved being able to save my favorite listings. I found the perfect place in no time thanks to them!"',
+    authorName: 'Sarah Johnson',
+    authorTitle: 'Home Buyer',
+    authorImage: '/images/testimonials/testimonial-1.jpg',
+  },
+  {
+    testimonial:
+      "As a real estate investor, time is money. Huusy's website has some really impressive tools. I can set up property alerts to be notified of new listings that meet my criteria, analyze market trends, and even estimate rental yields. It's like having a personal research assistant!",
+    authorName: 'Michael Chen',
+    authorTitle: 'New Homeowner',
+    authorImage: '/images/testimonials/testimonial-2.jpg',
+  },
+  {
+    testimonial:
+      "I was a first-time home buyer and completely overwhelmed by the process. The team at Huusy was amazing. They patiently answered all my questions, helped me find a great realtor, and guided me through every step. I couldn't have done it without them!",
+    authorName: 'Emma Chen',
+    authorTitle: 'Happy Renter',
+    authorImage: '/images/testimonials/testimonial-3.jpg',
+  },
+];
+
+async function PropertiesSection() {
+  const properties = await getProperties();
+
+  return (
+    <section className='pt-32 pb-8 px-4 md:px-16 relative z-10 bg-primary-50'>
+      <div className='w-full max-w-[1400px] mx-auto'>
+        <div className='flex flex-col md:flex-row justify-between items-center gap-2 mb-12'>
+          <h2 className='text-2xl md:text-4xl font-heading text-primary-950'>
+            Explore Our Properties
+          </h2>
+          <Link
+            href='/properties'
+            className='text-white bg-secondary-500 hover:bg-secondary-600 transition-colors duration-300 px-4 py-2 rounded-md text-lg font-body'
+          >
+            View All Properties
+          </Link>
+        </div>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+          {properties.slice(0, 8).map((property) => (
+            <PropertyCardVertical key={property.id} property={property} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+async function PropertyTypesSection() {
+  const propertyTypes = await getPropertyTypes();
+
+  return (
+    <section className='pt-32 pb-32 px-4 md:px-16 relative z-10 bg-primary-50'>
+      <div className='w-full max-w-[1400px] mx-auto'>
+        <div className='flex flex-col justify-center items-center gap-4 mb-12'>
+          <h2 className='text-2xl md:text-4xl font-heading text-primary-950'>
+            Browse by Property Type
+          </h2>
+          <p className='text-primary-950 text-center text-lg font-body w-full max-w-[600px]'>
+            Discover properties that match your specific needs and preferences
+          </p>
+        </div>
+        <PropertyTypeGrid propertyTypes={propertyTypes} />
+      </div>
+    </section>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <>
+      <ClientHeroSection />
+      <BenefitSection />
+
+      <Suspense fallback={<PropertyLoadingSkeleton />}>
+        <PropertiesSection />
+      </Suspense>
+
+      <section className='pt-32 pb-32 px-4 md:px-16 relative z-10 bg-primary-50'>
+        <div className='w-full max-w-[1400px] mx-auto flex flex-col justify-center items-center gap-8'>
+          <div className='flex flex-col justify-center items-center gap-4 mb-12'>
+            <h2 className='text-2xl md:text-4xl font-heading text-primary-950'>
+              How We make a Difference
+            </h2>
+            <p className='text-primary-950 text-center text-lg font-body w-full max-w-[600px]'>
+              We are a team of experienced real estate professionals who are
+              dedicated to providing the best possible service to our clients.
+            </p>
+          </div>
+          <div className='w-full grid grid-cols-1 md:grid-cols-3 gap-4'>
+            {TESTIMONIALS.map((testimonial, index) => (
+              <TestimonialCard key={index} {...testimonial} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <MainCallToAction />
+
+      <Suspense fallback={<PropertyTypeLoadingSkeleton />}>
+        <PropertyTypesSection />
+      </Suspense>
+    </>
   );
 }

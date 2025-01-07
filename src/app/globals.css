@@ -3,19 +3,49 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #e4f3f8;
+  --foreground: #174755;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-main);
+}
+/* Add to src/styles/globals.css */
+select option {
+  background-color: #174755; /* Base color */
+  color: white;
+  padding: 0.5rem 1rem;
+}
+
+select option:hover,
+select option:focus,
+select option:active,
+select option:checked {
+  background-color: #1d5666; /* Slightly lighter for hover */
+}
+
+/* For Firefox */
+select:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 #fff;
+}
+
+/* For Webkit browsers */
+select::-webkit-scrollbar {
+  width: 8px;
+}
+
+select::-webkit-scrollbar-track {
+  background: #174755; /* Base color */
+}
+
+select::-webkit-scrollbar-thumb {
+  background: #1d5666; /* Slightly lighter */
+  border-radius: 4px;
+}
+
+select::-webkit-scrollbar-thumb:hover {
+  background: #236577; /* Even lighter for hover */
 }
