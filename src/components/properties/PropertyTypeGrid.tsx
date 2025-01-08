@@ -22,7 +22,7 @@ export default function PropertyTypeGrid({
       {propertyTypes.map((type) => (
         <Link
           key={type.id}
-          href={`/properties/type/${type.path}`}
+          href={`/properties/types/${type.path}`}
           className='group bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden'
         >
           <div className='relative aspect-[16/9] w-full'>
