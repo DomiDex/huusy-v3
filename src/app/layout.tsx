@@ -43,11 +43,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang='en'>
-      <body className={`${inter.className} min-h-screen flex flex-col`}>
+    <html lang='en' suppressHydrationWarning>
+      <body
+        className={`${inter.className} min-h-screen flex flex-col`}
+        suppressHydrationWarning
+      >
         <SmoothScroll>
           <HeaderWrapper />
-          <main className='flex-1'>{children}</main>
+          <main className='flex-grow'>{children}</main>
           <FooterWrapper />
         </SmoothScroll>
       </body>
