@@ -1,166 +1,164 @@
-import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import type { City, PropertyType } from '@/lib/supabase/types';
+'use client';
+
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 
-interface FilterState {
-  minPrice: string;
-  maxPrice: string;
-  bedrooms: string;
-  bathrooms: string;
-  cityId: string;
-  propertyTypeId: string;
-}
-
-export default function FilterSidebar() {
+function FilterContent({
+  onFilterChange,
+}: {
+  onFilterChange?: (filters: any) => void;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [cities, setCities] = useState([]);
+  const [propertyTypes, setPropertyTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const supabase = createClient();
-
-  const [cities, setCities] = useState<City[]>([]);
-  const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>([]);
-
-  const [filters, setFilters] = useState<FilterState>({
-    minPrice: searchParams.get('minPrice') || '',
-    maxPrice: searchParams.get('maxPrice') || '',
-    bedrooms: searchParams.get('bedrooms') || '',
-    bathrooms: searchParams.get('bathrooms') || '',
-    cityId: searchParams.get('cityId') || '',
-    propertyTypeId: searchParams.get('propertyTypeId') || '',
-  });
 
   useEffect(() => {
     async function fetchFilterData() {
-      const [citiesData, propertyTypesData] = await Promise.all([
-        supabase.from('cities').select('id, title').order('title'),
-        supabase.from('property_types').select('id, title').order('title'),
-      ]);
+      try {
+        const [citiesResponse, propertyTypesResponse] = await Promise.all([
+          supabase.from('cities').select('id, title').order('title'),
+          supabase.from('property_types').select('id, title').order('title'),
+        ]);
 
-      if (citiesData.data) setCities(citiesData.data);
-      if (propertyTypesData.data) setPropertyTypes(propertyTypesData.data);
+        setCities(citiesResponse.data || []);
+        setPropertyTypes(propertyTypesResponse.data || []);
+      } catch (error) {
+        console.error('Error fetching filter data:', error);
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchFilterData();
-  }, []);
+  }, [supabase]);
 
-  const handleFilterChange = (name: keyof FilterState, value: string) => {
-    setFilters((prev) => ({ ...prev, [name]: value }));
+  const handleFilterChange = (key: string, value: string) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+
+    if (!value) {
+      current.delete(key);
+    } else {
+      current.set(key, value);
+    }
+
+    const search = current.toString();
+    const query = search ? `?${search}` : '';
+    router.push(`${window.location.pathname}${query}`);
+
+    if (onFilterChange) {
+      const filters = Object.fromEntries(current.entries());
+      onFilterChange(filters);
+    }
   };
 
-  const applyFilters = () => {
-    const params = new URLSearchParams();
-
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) {
-        params.append(key, value);
-      }
-    });
-
-    router.push(`/properties?${params.toString()}`);
-  };
-
-  const clearFilters = () => {
-    setFilters({
-      minPrice: '',
-      maxPrice: '',
-      bedrooms: '',
-      bathrooms: '',
-      cityId: '',
-      propertyTypeId: '',
-    });
-    router.push('/properties');
-  };
+  if (loading) {
+    return (
+      <div className='bg-white rounded-lg p-6 shadow-sm space-y-6'>
+        <div className='space-y-4'>
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className='space-y-2'>
+              <div className='w-24 h-4 bg-primary-100 animate-pulse rounded' />
+              <div className='w-full h-10 bg-primary-50 animate-pulse rounded' />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className='w-full md:w-64 bg-white p-6 rounded-lg shadow-sm space-y-6'>
-      <h2 className='text-xl font-heading text-primary-950'>Filters</h2>
-
+    <div className='bg-white rounded-lg p-6 shadow-sm space-y-6'>
       {/* Price Range */}
-      <div className='space-y-4'>
-        <h3 className='text-sm font-medium text-primary-950'>Price Range</h3>
-        <div className='grid grid-cols-2 gap-2'>
-          <div>
-            <input
-              type='number'
-              placeholder='Min'
-              value={filters.minPrice}
-              onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-              className='w-full px-3 py-2 text-sm border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-            />
-          </div>
-          <div>
-            <input
-              type='number'
-              placeholder='Max'
-              value={filters.maxPrice}
-              onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-              className='w-full px-3 py-2 text-sm border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-            />
-          </div>
-        </div>
+      <div className='space-y-2'>
+        <label className='block text-sm font-medium text-primary-950'>
+          Price Range
+        </label>
+        <select
+          className='w-full px-3 py-2 bg-primary-50 border border-primary-200 
+          rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500'
+          onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+          value={searchParams.get('minPrice') || ''}
+        >
+          <option value=''>Min Price</option>
+          <option value='100000'>$100,000</option>
+          <option value='200000'>$200,000</option>
+          <option value='300000'>$300,000</option>
+          <option value='500000'>$500,000</option>
+          <option value='750000'>$750,000</option>
+          <option value='1000000'>$1,000,000</option>
+        </select>
+        <select
+          className='w-full px-3 py-2 bg-primary-50 border border-primary-200 
+          rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500'
+          onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+          value={searchParams.get('maxPrice') || ''}
+        >
+          <option value=''>Max Price</option>
+          <option value='200000'>$200,000</option>
+          <option value='300000'>$300,000</option>
+          <option value='500000'>$500,000</option>
+          <option value='750000'>$750,000</option>
+          <option value='1000000'>$1,000,000</option>
+          <option value='2000000'>$2,000,000+</option>
+        </select>
       </div>
 
       {/* Bedrooms */}
       <div className='space-y-2'>
-        <h3 className='text-sm font-medium text-primary-950'>Bedrooms</h3>
+        <label className='block text-sm font-medium text-primary-950'>
+          Bedrooms
+        </label>
         <select
-          value={filters.bedrooms}
+          className='w-full px-3 py-2 bg-primary-50 border border-primary-200 
+          rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500'
           onChange={(e) => handleFilterChange('bedrooms', e.target.value)}
-          className='w-full px-3 py-2 text-sm border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+          value={searchParams.get('bedrooms') || ''}
         >
           <option value=''>Any</option>
-          {[1, 2, 3, 4, 5].map((num) => (
-            <option key={num} value={num}>
-              {num}+
-            </option>
-          ))}
+          <option value='1'>1+</option>
+          <option value='2'>2+</option>
+          <option value='3'>3+</option>
+          <option value='4'>4+</option>
+          <option value='5'>5+</option>
         </select>
       </div>
 
       {/* Bathrooms */}
       <div className='space-y-2'>
-        <h3 className='text-sm font-medium text-primary-950'>Bathrooms</h3>
+        <label className='block text-sm font-medium text-primary-950'>
+          Bathrooms
+        </label>
         <select
-          value={filters.bathrooms}
+          className='w-full px-3 py-2 bg-primary-50 border border-primary-200 
+          rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500'
           onChange={(e) => handleFilterChange('bathrooms', e.target.value)}
-          className='w-full px-3 py-2 text-sm border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+          value={searchParams.get('bathrooms') || ''}
         >
           <option value=''>Any</option>
-          {[1, 1.5, 2, 2.5, 3, 3.5, 4].map((num) => (
-            <option key={num} value={num}>
-              {num}+
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* City */}
-      <div className='space-y-2'>
-        <h3 className='text-sm font-medium text-primary-950'>City</h3>
-        <select
-          value={filters.cityId}
-          onChange={(e) => handleFilterChange('cityId', e.target.value)}
-          className='w-full px-3 py-2 text-sm border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-        >
-          <option value=''>Any</option>
-          {cities.map((city) => (
-            <option key={city.id} value={city.id}>
-              {city.title}
-            </option>
-          ))}
+          <option value='1'>1+</option>
+          <option value='2'>2+</option>
+          <option value='3'>3+</option>
+          <option value='4'>4+</option>
         </select>
       </div>
 
       {/* Property Type */}
       <div className='space-y-2'>
-        <h3 className='text-sm font-medium text-primary-950'>Property Type</h3>
+        <label className='block text-sm font-medium text-primary-950'>
+          Property Type
+        </label>
         <select
-          value={filters.propertyTypeId}
+          className='w-full px-3 py-2 bg-primary-50 border border-primary-200 
+          rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500'
           onChange={(e) => handleFilterChange('propertyTypeId', e.target.value)}
-          className='w-full px-3 py-2 text-sm border border-primary-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+          value={searchParams.get('propertyTypeId') || ''}
         >
           <option value=''>Any</option>
-          {propertyTypes.map((type) => (
+          {propertyTypes.map((type: any) => (
             <option key={type.id} value={type.id}>
               {type.title}
             </option>
@@ -168,21 +166,50 @@ export default function FilterSidebar() {
         </select>
       </div>
 
-      {/* Action Buttons */}
-      <div className='space-y-2 pt-4'>
-        <button
-          onClick={applyFilters}
-          className='w-full px-4 py-2 bg-secondary-500 text-white rounded-lg hover:bg-secondary-600 transition-colors'
+      {/* City */}
+      <div className='space-y-2'>
+        <label className='block text-sm font-medium text-primary-950'>
+          City
+        </label>
+        <select
+          className='w-full px-3 py-2 bg-primary-50 border border-primary-200 
+          rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500'
+          onChange={(e) => handleFilterChange('cityId', e.target.value)}
+          value={searchParams.get('cityId') || ''}
         >
-          Apply Filters
-        </button>
-        <button
-          onClick={clearFilters}
-          className='w-full px-4 py-2 bg-primary-100 text-primary-950 rounded-lg hover:bg-primary-200 transition-colors'
-        >
-          Clear Filters
-        </button>
+          <option value=''>Any</option>
+          {cities.map((city: any) => (
+            <option key={city.id} value={city.id}>
+              {city.title}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
+  );
+}
+
+export default function FilterSidebar({
+  onFilterChange,
+}: {
+  onFilterChange?: (filters: any) => void;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className='bg-white rounded-lg p-6 shadow-sm space-y-6'>
+          <div className='space-y-4'>
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className='space-y-2'>
+                <div className='w-24 h-4 bg-primary-100 animate-pulse rounded' />
+                <div className='w-full h-10 bg-primary-50 animate-pulse rounded' />
+              </div>
+            ))}
+          </div>
+        </div>
+      }
+    >
+      <FilterContent onFilterChange={onFilterChange} />
+    </Suspense>
   );
 }

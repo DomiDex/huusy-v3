@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import MainHeader from '@/components/layout/headers/MainHeader';
 import MainCardWild from '@/components/properties/cards/MainCardWild';
@@ -16,15 +16,11 @@ function LoadingState() {
       <MainHeader variant='light' />
       <section className='min-h-screen pt-32 pb-8 px-4 md:px-8'>
         <div className='w-full max-w-[1400px] mx-auto'>
-          {/* Title skeleton */}
           <div className='w-64 h-8 bg-primary-100 animate-pulse rounded-lg mb-8' />
-
           <div className='flex flex-col md:flex-row gap-8'>
-            {/* Sidebar skeleton */}
             <aside className='md:w-64 md:flex-shrink-0'>
               <div className='bg-white rounded-lg p-6 shadow-sm'>
                 <div className='space-y-4'>
-                  {/* Filter title skeletons */}
                   {[...Array(5)].map((_, i) => (
                     <div key={i} className='space-y-2'>
                       <div className='w-24 h-4 bg-primary-100 animate-pulse rounded' />
@@ -34,8 +30,6 @@ function LoadingState() {
                 </div>
               </div>
             </aside>
-
-            {/* Main content skeleton */}
             <main className='flex-1'>
               <div className='grid grid-cols-1 gap-6'>
                 {[...Array(3)].map((_, index) => (
@@ -50,7 +44,7 @@ function LoadingState() {
   );
 }
 
-export default function AllPropertiesPage() {
+function PropertiesContent() {
   const [loading, setLoading] = useState(true);
   const [properties, setProperties] = useState<
     (Property & {
@@ -111,7 +105,7 @@ export default function AllPropertiesPage() {
     }
 
     fetchProperties();
-  }, [searchParams]);
+  }, [searchParams, supabase]);
 
   if (loading) {
     return <LoadingState />;
@@ -150,5 +144,13 @@ export default function AllPropertiesPage() {
         </div>
       </section>
     </>
+  );
+}
+
+export default function AllPropertiesPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <PropertiesContent />
+    </Suspense>
   );
 }
