@@ -1,39 +1,30 @@
+import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import HeaderWrapper from '@/components/layout/HeaderWrapper';
 import FooterWrapper from '@/components/layout/FooterWrapper';
 import SmoothScroll from '@/components/providers/SmoothScroll';
-import { Metadata } from 'next';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Huusy - Your Premier Real Estate Marketplace',
-  description:
-    'Find your perfect home with Huusy. Browse through our extensive collection of properties for sale and rent. Connect with professional real estate agents and make your dream home a reality.',
-  keywords:
-    'real estate, homes for sale, property listings, real estate agents, houses for rent, apartments',
-  openGraph: {
-    title: 'Huusy - Your Premier Real Estate Marketplace',
-    description:
-      'Find your perfect home with Huusy. Browse through our extensive collection of properties for sale and rent.',
-    type: 'website',
-    url: 'https://huusy.com',
-    images: [
-      {
-        url: '/images/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Huusy Real Estate Marketplace',
-      },
-    ],
+  title: {
+    template: '%s | Huusy',
+    default: 'Huusy - Real Estate Marketplace',
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Huusy - Your Premier Real Estate Marketplace',
-    description:
-      'Find your perfect home with Huusy. Browse through our extensive collection of properties for sale and rent.',
-    images: ['/images/og-image.jpg'],
+  description:
+    'Find your dream home with Huusy - The modern real estate marketplace',
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://huusy.com'
+  ),
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    siteName: 'Huusy',
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
