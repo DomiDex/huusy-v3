@@ -6,7 +6,7 @@ import {
   signUpPro,
   signInCustomer,
   signInPro,
-} from '@/lib/auth/actions';
+} from '@/lib/auth/client-actions';
 import { toast } from 'sonner';
 
 export function useAuth() {
@@ -82,26 +82,23 @@ export function useAuth() {
     accountType: 'customer' | 'pro' = 'customer'
   ) => {
     try {
-      let authData;
+      let response;
 
       if (accountType === 'pro') {
-        authData = await signInPro(email, password);
+        response = await signInPro(email, password);
+        if (!response.data?.user) {
+          throw new Error('Login failed');
+        }
+        router.push(`/pro/${response.data.user.id}`);
       } else {
-        authData = await signInCustomer(email, password);
+        response = await signInCustomer(email, password);
+        if (!response.data?.user) {
+          throw new Error('Login failed');
+        }
+        router.push(`/customer/${response.data.user.id}`);
       }
 
-      if (!authData?.user?.id) {
-        throw new Error('Login failed');
-      }
-
-      // Redirect based on account type
-      if (accountType === 'pro') {
-        router.push(`/pro/${authData.user.id}`);
-      } else {
-        router.push(`/customer/${authData.user.id}`);
-      }
-
-      return authData;
+      return response;
     } catch (error: any) {
       console.error('Login error details:', error);
       throw new Error(error.message || 'Failed to login');
