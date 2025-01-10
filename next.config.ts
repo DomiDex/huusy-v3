@@ -10,6 +10,14 @@ const config: NextConfig = {
       },
     ],
   },
+  // Optimize for production
+  swcMinify: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
+  // Improve static optimization
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
 };
 
 export default config;

@@ -10,6 +10,7 @@ import type {
   Property,
 } from '@/lib/supabase/types';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 interface FormData {
   property_name: string;
@@ -435,9 +436,11 @@ export default function AddPropertyForm() {
             <div className='mt-6 grid grid-cols-2 md:grid-cols-4 gap-4'>
               {previewUrls.map((url, index) => (
                 <div key={url} className='relative group'>
-                  <img
+                  <Image
                     src={url}
                     alt={`Preview ${index + 1}`}
+                    width={128}
+                    height={128}
                     className='w-full h-32 object-cover rounded-lg'
                   />
                   <button

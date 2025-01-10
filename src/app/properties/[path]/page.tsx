@@ -20,7 +20,6 @@ import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/thumbnails.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
 import PropertyCardVertical from '@/components/properties/cards/PropertyCardVertical';
-import TestimonialCard from '@/components/properties/cards/testimonial/TestimonialCard';
 
 export default function PropertyDetailPage() {
   const [property, setProperty] = useState<

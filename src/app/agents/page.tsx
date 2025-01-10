@@ -88,7 +88,7 @@ export default function AgentsPage() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [supabase]);
 
   if (loading) {
     return <LoadingState />;

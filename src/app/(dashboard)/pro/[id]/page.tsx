@@ -91,7 +91,7 @@ export default async function Page({ params }: { params: { id: string } }) {
             ) : (
               <div className='text-center py-12 bg-primary-50 rounded-lg'>
                 <p className='text-primary-800'>
-                  You haven't added any properties yet.
+                  You haven&apos;t added any properties yet.
                 </p>
                 <Link
                   href={`/pro/${params.id}/properties/add`}

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { HeartIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect, useCallback } from 'react';
+import { HeartIcon as HeartIconOutline } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
@@ -17,11 +17,7 @@ export default function FavoriteButton({ propertyId }: FavoriteButtonProps) {
   const supabase = createClient();
   const router = useRouter();
 
-  useEffect(() => {
-    checkIfFavorite();
-  }, [propertyId]);
-
-  const checkIfFavorite = async () => {
+  const checkIfFavorite = useCallback(async () => {
     try {
       const {
         data: { user },
@@ -45,7 +41,11 @@ export default function FavoriteButton({ propertyId }: FavoriteButtonProps) {
       console.error('Error checking favorite status:', error);
       setIsLoading(false);
     }
-  };
+  }, [propertyId, supabase]);
+
+  useEffect(() => {
+    checkIfFavorite();
+  }, [checkIfFavorite]);
 
   const toggleFavorite = async () => {
     try {
@@ -60,7 +60,6 @@ export default function FavoriteButton({ propertyId }: FavoriteButtonProps) {
       }
 
       if (isFavorite) {
-        // Remove from favorites
         const { error } = await supabase
           .from('favorites')
           .delete()
@@ -71,7 +70,6 @@ export default function FavoriteButton({ propertyId }: FavoriteButtonProps) {
         setIsFavorite(false);
         toast.success('Removed from favorites');
       } else {
-        // Add to favorites
         const { error } = await supabase.from('favorites').insert({
           property_id: propertyId,
           customer_id: user.id,
@@ -87,26 +85,17 @@ export default function FavoriteButton({ propertyId }: FavoriteButtonProps) {
     }
   };
 
-  if (isLoading) {
-    return (
-      <button
-        className='p-2 bg-white rounded-full shadow-sm hover:bg-primary-50 transition-colors'
-        disabled
-      >
-        <HeartIcon className='w-6 h-6 text-primary-300' />
-      </button>
-    );
-  }
-
   return (
     <button
       onClick={toggleFavorite}
-      className='p-2 bg-white rounded-full shadow-sm hover:bg-primary-50 transition-colors'
+      disabled={isLoading}
+      className='p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow duration-200'
+      aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
     >
       {isFavorite ? (
         <HeartIconSolid className='w-6 h-6 text-red-500' />
       ) : (
-        <HeartIcon className='w-6 h-6 text-primary-950' />
+        <HeartIconOutline className='w-6 h-6 text-gray-600' />
       )}
     </button>
   );

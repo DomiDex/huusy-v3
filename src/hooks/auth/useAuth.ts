@@ -9,6 +9,11 @@ import {
 } from '@/lib/auth/client-actions';
 import { toast } from 'sonner';
 
+interface AuthError {
+  message: string;
+  status?: number;
+}
+
 export function useAuth() {
   const router = useRouter();
 
@@ -60,7 +65,7 @@ export function useAuth() {
       );
 
       return authData;
-    } catch (error: any) {
+    } catch (error: AuthError) {
       console.error('Registration error details:', error);
 
       if (error.message?.includes('rate limit')) {
@@ -99,7 +104,7 @@ export function useAuth() {
       }
 
       return response;
-    } catch (error: any) {
+    } catch (error: AuthError) {
       console.error('Login error details:', error);
       throw new Error(error.message || 'Failed to login');
     }
