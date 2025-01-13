@@ -32,7 +32,7 @@ export default function LoginForm({
     try {
       const response = await login(formData.email, formData.password, type);
 
-      if (!response?.data?.user?.id) {
+      if (!response?.user?.id) {
         throw new Error('Login failed');
       }
 
@@ -42,8 +42,15 @@ export default function LoginForm({
         password: '',
       });
 
-      // Success message is not needed as the router.push will handle the redirect
-      // The redirect is handled inside the login function in useAuth
+      // Show success message
+      toast.success('Login successful!');
+
+      // Let the router handle the redirect based on user type
+      if (type === 'pro') {
+        router.push(`/pro/${response.user.id}`);
+      } else {
+        router.push(`/customer/${response.user.id}`);
+      }
     } catch (error) {
       console.error('Login error:', error);
       toast.error(
