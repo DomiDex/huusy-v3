@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/auth/useAuth';
 import Image from 'next/image';
 
 export default function LoginForm() {
-  const { login } = useAuth();
+  const { signIn } = useAuth();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -23,10 +25,31 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      await login(formData.email, formData.password);
-      toast.success('Login successful! Redirecting to dashboard...');
+      const authData = await signIn({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (!authData?.user?.id) {
+        throw new Error('Login failed');
+      }
+
+      // Clear form data
+      setFormData({
+        email: '',
+        password: '',
+      });
+
+      // Show success message and redirect to dashboard
+      toast.success('Login successful!');
+      router.push(`/customer/${authData.user.id}`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Login failed');
+      console.error('Login error:', error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Login failed. Please check your credentials and try again.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -53,7 +76,7 @@ export default function LoginForm() {
       <div className='relative'>
         <div className='relative flex justify-center items-center text-sm'>
           <span className='h-[1px] w-1/3 bg-primary-50/20'></span>
-          <span className='px-2  text-primary-50'>Or continue with</span>
+          <span className='px-2 text-primary-50'>Or continue with</span>
           <span className='h-[1px] w-1/3 bg-primary-50/20'></span>
         </div>
       </div>
@@ -73,7 +96,7 @@ export default function LoginForm() {
             value={formData.email}
             onChange={handleChange}
             className='mt-1 block w-full px-3 py-2 bg-primary-900/50 border 
-                border-secondary-500/50 rounded-lg text-primary-50 
+            border-secondary-500/50 rounded-lg text-primary-50 
             placeholder:text-primary-50/50 focus:outline-none 
             focus:ring-2 focus:ring-secondary-500'
             placeholder='Enter your email'
