@@ -32,7 +32,8 @@ export default function LoginForm({
     try {
       const response = await login(formData.email, formData.password, type);
 
-      if (!response?.user?.id) {
+      // Check the correct response structure
+      if (!response?.data?.user?.id) {
         throw new Error('Login failed');
       }
 
@@ -45,12 +46,7 @@ export default function LoginForm({
       // Show success message
       toast.success('Login successful!');
 
-      // Let the router handle the redirect based on user type
-      if (type === 'pro') {
-        router.push(`/pro/${response.user.id}`);
-      } else {
-        router.push(`/customer/${response.user.id}`);
-      }
+      // Remove the router.push from here since it's handled in the useAuth hook
     } catch (error) {
       console.error('Login error:', error);
       toast.error(
