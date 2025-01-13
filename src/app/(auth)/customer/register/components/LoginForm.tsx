@@ -5,9 +5,14 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/auth/useAuth';
 import Image from 'next/image';
+import Link from 'next/link';
 
-export default function LoginForm() {
-  const { signIn } = useAuth();
+export default function LoginForm({
+  type = 'customer',
+}: {
+  type?: 'customer' | 'pro';
+}) {
+  const { login } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -25,12 +30,9 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      const authData = await signIn({
-        email: formData.email,
-        password: formData.password,
-      });
+      const response = await login(formData.email, formData.password, type);
 
-      if (!authData?.user?.id) {
+      if (!response?.data?.user?.id) {
         throw new Error('Login failed');
       }
 
@@ -40,9 +42,8 @@ export default function LoginForm() {
         password: '',
       });
 
-      // Show success message and redirect to dashboard
-      toast.success('Login successful!');
-      router.push(`/customer/${authData.user.id}`);
+      // Success message is not needed as the router.push will handle the redirect
+      // The redirect is handled inside the login function in useAuth
     } catch (error) {
       console.error('Login error:', error);
       toast.error(
@@ -126,6 +127,23 @@ export default function LoginForm() {
           />
         </div>
       </div>
+
+      {type === 'pro' && (
+        <div className='flex items-center justify-between text-sm'>
+          <Link
+            href='/pro/register'
+            className='text-secondary-400 hover:text-secondary-300 font-main'
+          >
+            Create an account
+          </Link>
+          <Link
+            href='/pro/forgot-password'
+            className='text-secondary-400 hover:text-secondary-300 font-main'
+          >
+            Forgot password?
+          </Link>
+        </div>
+      )}
 
       <button
         type='submit'
