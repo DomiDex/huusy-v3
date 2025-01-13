@@ -98,18 +98,44 @@ export async function signUpCustomer({
 }) {
   const supabase = await createClient();
 
-  const response = await supabase.auth.signUp({
+  // First create the user account
+  const { data: authData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
-        username,
         role: 'customer',
       },
     },
   });
 
-  return response;
+  if (signUpError) throw signUpError;
+
+  if (!authData.user) {
+    throw new Error('Failed to create user account');
+  }
+
+  // Then create the customer profile
+  const { error: profileError } = await supabase
+    .from('account_customer')
+    .insert({
+      id: authData.user.id,
+      username: username,
+      email: email,
+      profile_image_url: null,
+      account_type: 'customer',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+
+  if (profileError) {
+    console.error('Profile creation error:', profileError);
+    // If profile creation fails, clean up the auth user
+    await supabase.auth.admin.deleteUser(authData.user.id);
+    throw new Error('Failed to create customer profile');
+  }
+
+  return authData;
 }
 
 export async function signUpPro({
