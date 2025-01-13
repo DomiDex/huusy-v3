@@ -30,7 +30,9 @@ export default function LoginForm({
     setIsLoading(true);
 
     try {
+      console.log('Starting login process...', { accountType: type });
       const response = await login(formData.email, formData.password, type);
+      console.log('Login response:', response);
 
       // Check the correct response structure
       if (!response?.data?.user?.id) {
@@ -48,7 +50,11 @@ export default function LoginForm({
 
       // Remove the router.push from here since it's handled in the useAuth hook
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Detailed login error:', {
+        error,
+        message: error.message,
+        stack: error.stack,
+      });
       toast.error(
         error instanceof Error
           ? error.message
